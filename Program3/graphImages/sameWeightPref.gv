@@ -1,0 +1,23 @@
+digraph {
+	Casey
+	Cierra
+	Ember
+	Taylor
+	Sam
+	Andrea
+	Casey -> Cierra [label="4, 1" weight=4]
+	Ember -> Casey [label="3, 2" weight=3]
+	Casey -> Taylor [label="3, 2" weight=3]
+	Casey -> Sam [label="5, 0" weight=5]
+	Casey -> Andrea [label="4, 1" weight=4]
+	Cierra -> Ember [label="3, 2" weight=3]
+	Taylor -> Cierra [label="3, 2" weight=3]
+	Cierra -> Sam [label="5, 0" weight=5]
+	Cierra -> Andrea [label="3, 2" weight=3]
+	Taylor -> Ember [label="3, 2" weight=3]
+	Ember -> Sam [label="4, 1" weight=4]
+	Ember -> Andrea [label="3, 2" weight=3]
+	Taylor -> Sam [label="4, 1" weight=4]
+	Taylor -> Andrea [label="4, 1" weight=4]
+	Sam -> Andrea [label="3, 2" weight=3]
+}
