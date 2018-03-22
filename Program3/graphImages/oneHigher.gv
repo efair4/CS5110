@@ -1,23 +1,17 @@
 digraph {
-	Casey
-	Cierra
-	Ember
-	Taylor
-	Sam
-	Andrea
-	Casey -> Cierra [label="15, 8" weight=15]
-	Casey -> Ember [label="12, 11" weight=12]
-	Taylor -> Casey [label="23, 0" weight=23]
-	Sam -> Casey [label="19, 4" weight=19]
-	Andrea -> Casey [label="19, 4" weight=19]
-	Cierra -> Ember [label="12, 11" weight=12]
-	Taylor -> Cierra [label="23, 0" weight=23]
-	Sam -> Cierra [label="17, 6" weight=17]
-	Andrea -> Cierra [label="23, 0" weight=23]
-	Taylor -> Ember [label="17, 6" weight=17]
-	Sam -> Ember [label="17, 6" weight=17]
-	Andrea -> Ember [label="17, 6" weight=17]
-	Taylor -> Sam [label="15, 8" weight=15]
-	Taylor -> Andrea [label="17, 6" weight=17]
-	Sam -> Andrea [label="17, 6" weight=17]
+	Highest
+	High
+	Medium
+	Low
+	Lowest
+	High -> Highest [label="8, 4" weight=8]
+	Medium -> Highest [label="12, 0" weight=12]
+	Low -> Highest [label="11, 1" weight=11]
+	Lowest -> Highest [label="11, 1" weight=11]
+	High -> Medium [label="8, 4" weight=8]
+	Low -> High [label="8, 4" weight=8]
+	Lowest -> High [label="8, 4" weight=8]
+	Low -> Medium [label="7, 5" weight=7]
+	Medium -> Lowest [label="7, 5" weight=7]
+	Low -> Lowest [label="12, 0" weight=12]
 }

@@ -1,9 +1,10 @@
 import graphviz as gv
 import random
 import math
+import copy
 from random import shuffle
 
-CANDIDATES = ['Casey','Cierra','Ember','Taylor','Sam','Andrea']
+CANDIDATES = ['Highest','High','Medium','Low','Lowest']
 AGENTS = ['A','B','C','D','E']
 HIGHESTWEIGHT = 6
 
@@ -19,30 +20,32 @@ def main():
     oneHigherMajority = getMajority(oneHigherPref)
     sameWeightPrefMajority = getMajority(sameWeightPref)
 
-    #userGraph = getGraph(userMajority, 'user')
-    randGraph = getGraph(randMajority, 'rand')
-    oneHigherGraph = getGraph(oneHigherMajority, 'oneHigher')
-    sameWeightPrefGraph = getGraph(sameWeightPrefMajority, 'sameWeightPref')
+    #userGraphStuff = getGraph(userMajority, 'user')
+    randDegreeList = getGraph(randMajority, 'rand')
+    oneHigherDegreeList = getGraph(oneHigherMajority, 'oneHigher')
+    sameWeightPrefDegreeList = getGraph(sameWeightPrefMajority, 'sameWeightPref')
+
+
 
     #userBorda = bordaOrder(userPref)
     randBorda = bordaOrder(randomPref)
     oneHigherBorda = bordaOrder(oneHigherPref)
     sameBorda = bordaOrder(sameWeightPref)
 
-    #userBucklin = bucklinOrder(userPref)
-    randBucklin = bucklinOrder(randomPref)
-    oneHigherBucklin = bucklinOrder(oneHigherPref)
-    sameBucklin = bucklinOrder(sameWeightPref)
+    #userSecondCopeland = secondCopelandOrder(userPref)
+    randSecondCopeland = secondCopelandOrder(randomPref)
+    oneHigherSecondCopeland = secondCopelandOrder(oneHigherPref)
+    sameSecondCopeland = secondCopelandOrder(sameWeightPref)
 
     #userSTV = stvOrder(userPref)
     randSTV = stvOrder(randomPref)
     oneHigherSTV = stvOrder(oneHigherPref)
     sameSTV = stvOrder(sameWeightPref)
 
-    #makeTable('User Choice Ranking', userBorda, userBucklin, userSVT)
-    makeTable('Randomly Assigned Ranking', randBorda, randBucklin, randSTV)
-    #makeTable('One Candidate Always Preferred Ranking', oneHigherBorda, oneHigherBucklin, oneHigherSTV)
-    #makeTable('Same Weight and Single Preference Ranking', sameBorda, sameBucklin, sameSTV)
+    #makeTable('User Choice Ranking', userBorda, userSecondCopeland, userSVT)
+    makeTable('Randomly Assigned Ranking', randBorda, randSecondCopeland, randSTV)
+    #makeTable('One Candidate Always Preferred Ranking', oneHigherBorda, oneHigherSecondCopeland, oneHigherSTV)
+    #makeTable('Same Weight and Single Preference Ranking', sameBorda, sameSecondCopeland, sameSTV)
 
 
 
@@ -67,7 +70,6 @@ def getRandPref():
         shuffle(randNums)
         randWeight = random.randint(1, HIGHESTWEIGHT)
         randomPref.append({'agent': AGENTS[x], 'weight': randWeight, 'prefArray': randNums})
-        print(randomPref[len(randomPref)-1])
     return randomPref
 
 def getOneHigherPref():
@@ -129,17 +131,24 @@ def getMajority(prefArray):
 
 def getGraph(majority, type):
     digraph = gv.Digraph()
+    degreeAndList = [{'type':'Highest', 'degree':0, 'listBeaten': []}, {'type':'High', 'degree':0, 'listBeaten': []},
+                     {'type':'Medium', 'degree':0, 'listBeaten': []}, {'type':'Low', 'degree':0, 'listBeaten': []}, {'type': 'Lowest', 'degree':0, 'listBeaten': []}]
     for x in range(0, len(CANDIDATES)):
         digraph.node(CANDIDATES[x])
     for x in range(0, len(majority)):
         item = majority[x]
         if (item['numFor'] > item['numAgainst']):
             digraph.edge(item['a'], item['b'], label=str(item['numFor']) + ', ' + str(item['numAgainst']), weight=str(item['numFor']))
+            dict = next((thing for thing in degreeAndList if thing['type'] == item['a']))
+            dict['degree'] += 1
+            dict['listBeaten'].append(item['b'])
         else:
             digraph.edge(item['b'], item['a'], label=str(item['numAgainst']) + ', ' + str(item['numFor']), weight=str(item['numAgainst']))
-    print(type)
+            dict = next((thing for thing in degreeAndList if thing['type'] == item['b']))
+            dict['degree'] += 1
+            dict['listBeaten'].append(item['a'])
     digraph.render('graphImages/' + type + '.gv', view=False)
-    return digraph
+    return degreeAndList
 
 def bordaOrder(preferences):
     candidateScores = {}
@@ -152,24 +161,68 @@ def bordaOrder(preferences):
     sortedCandidates = sorted(candidateScores, key=candidateScores.get, reverse=True)
     return sortedCandidates
 
-def bucklinOrder(preferences):
+def secondCopelandOrder(preferences):
     candidateScores = {}
     sortedCandidates = sorted(candidateScores, key=candidateScores.get, reverse=True)
     return CANDIDATES#sortedCandidates
 
 def stvOrder(preferences):
-    candidateScores = {}
-    sortedCandidates = sorted(candidateScores, key=candidateScores.get, reverse=True)
-    return CANDIDATES#sortedCandidates
+    tempCandidates = copy.deepcopy(CANDIDATES)
+    prefCopy = copy.deepcopy(preferences)
+    sortedCandidates = []
+    plurality = calcPlurality(preferences, [])
+    lowestPlural = 0
+    while(len(tempCandidates) > 0):
+        try:
+            indexToRemove = plurality.index(lowestPlural)
+            plurality[indexToRemove] = -1
+            tempCandidates.remove(CANDIDATES[indexToRemove])
+            sortedCandidates.insert(0,CANDIDATES[indexToRemove])
+            prefCopy = recalcPreferences(prefCopy, tempCandidates)
+            plurality = calcPlurality(prefCopy, plurality)
+        except:
+            lowestPlural += 1
 
-def makeTable(votingMethod, borda, bucklin, stv):
-    numList = [1,2,3,4,5,6]
-    print('|| ', votingMethod, ' || ', 'Borda',' || ', 'Bucklin', ' ||  ', 'STV', '  ||')
+    return sortedCandidates
+
+def recalcPreferences(prefs, candidates):
+    for x in range(len(AGENTS)):
+        prefArray = prefs[x]['prefArray']
+        indexOfHighest = prefArray.index(1)
+        try:
+            candidates.index(CANDIDATES[indexOfHighest])
+        except:
+            prefArray[indexOfHighest] = len(CANDIDATES) + 1
+            for y in range(len(prefArray)):
+                prefArray[y] -= 1
+    return prefs
+
+
+def calcPlurality(preferences, oldPlural):
+    plurality = []
+    for x in range(len(CANDIDATES)):
+        plural = 0
+        if(len(oldPlural) == len(CANDIDATES) and oldPlural[x] == -1):
+            plurality.append(-1)
+            continue
+        for y in range(len(AGENTS)):
+            prefArray = preferences[y]['prefArray']
+            if(prefArray[x] == 1):
+                plural += 1
+        plurality.append(plural)
+    return plurality
+
+def makeTable(votingMethod, borda, secondCopeland, stv):
+    numList = []
+    for x in range(0, len(CANDIDATES)):
+        numList.append(x+1)
+    print('\n|| ', votingMethod, ' ||  ', 'Borda','  ||  ', '2nd Copeland', '  ||  ', 'STV', '   ||')
+    print('-'*78)
     for x in range(0, len(CANDIDATES)):
         print('||',numList[x],' '*(len(votingMethod)),'||',
-              borda[x],' '*(6-len(borda[x])),'||',
-              bucklin[x],' '*(8-len(bucklin[x])),'||',
-              stv[x],' '*(6-len(stv[x])),'||')
+              borda[x],' '*(8-len(borda[x])),'||',
+              secondCopeland[x],' '*(15-len(secondCopeland[x])),'||',
+              stv[x],' '*(7-len(stv[x])),'||')
 
 
 
