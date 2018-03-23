@@ -1,0 +1,17 @@
+digraph {
+	Highest
+	High
+	Medium
+	Low
+	Lowest
+	High -> Highest [label="9, 5" weight=9]
+	Medium -> Highest [label="9, 5" weight=9]
+	Low -> Highest [label="7, 7" weight=7]
+	Lowest -> Highest [label="9, 5" weight=9]
+	High -> Medium [label="9, 5" weight=9]
+	Low -> High [label="7, 7" weight=7]
+	Lowest -> High [label="7, 7" weight=7]
+	Low -> Medium [label="7, 7" weight=7]
+	Lowest -> Medium [label="7, 7" weight=7]
+	Lowest -> Low [label="9, 5" weight=9]
+}

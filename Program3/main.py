@@ -9,43 +9,43 @@ AGENTS = ['A','B','C','D','E']
 HIGHESTWEIGHT = 6
 
 def main():
-    #userPref = getUserPref()
+    userPref = getUserPref()
     randomPref = getRandPref()
     oneHigherPref = getOneHigherPref()
     sameWeightPref = getSameWeightPref()
 
     #The following hold the majority graph data for each voting method
-    #userMajority = getMajority(userPref)
+    userMajority = getMajority(userPref)
     randMajority = getMajority(randomPref)
     oneHigherMajority = getMajority(oneHigherPref)
     sameWeightPrefMajority = getMajority(sameWeightPref)
 
-    #userGraphStuff = getGraph(userMajority, 'user')
+    userDegreeList = getGraph(userMajority, 'user')
     randDegreeList = getGraph(randMajority, 'rand')
     oneHigherDegreeList = getGraph(oneHigherMajority, 'oneHigher')
     sameWeightPrefDegreeList = getGraph(sameWeightPrefMajority, 'sameWeightPref')
 
 
 
-    #userBorda = bordaOrder(userPref)
+    userBorda = bordaOrder(userPref)
     randBorda = bordaOrder(randomPref)
     oneHigherBorda = bordaOrder(oneHigherPref)
     sameBorda = bordaOrder(sameWeightPref)
 
-    #userSecondCopeland = secondCopelandOrder(userPref)
-    randSecondCopeland = secondCopelandOrder(randomPref)
-    oneHigherSecondCopeland = secondCopelandOrder(oneHigherPref)
-    sameSecondCopeland = secondCopelandOrder(sameWeightPref)
+    userSecondCopeland = secondCopelandOrder(userDegreeList)
+    randSecondCopeland = secondCopelandOrder(randDegreeList)
+    oneHigherSecondCopeland = secondCopelandOrder(oneHigherDegreeList)
+    sameSecondCopeland = secondCopelandOrder(sameWeightPrefDegreeList)
 
-    #userSTV = stvOrder(userPref)
+    userSTV = stvOrder(userPref)
     randSTV = stvOrder(randomPref)
     oneHigherSTV = stvOrder(oneHigherPref)
     sameSTV = stvOrder(sameWeightPref)
 
-    #makeTable('User Choice Ranking', userBorda, userSecondCopeland, userSVT)
-    makeTable('Randomly Assigned Ranking', randBorda, randSecondCopeland, randSTV)
-    #makeTable('One Candidate Always Preferred Ranking', oneHigherBorda, oneHigherSecondCopeland, oneHigherSTV)
-    #makeTable('Same Weight and Single Preference Ranking', sameBorda, sameSecondCopeland, sameSTV)
+    makeTable('User Choice Ranking', userBorda, userSecondCopeland, userSTV)
+    makeTable('Randomly Assigned', randBorda, randSecondCopeland, randSTV)
+    makeTable('One Candidate Always Preferred', oneHigherBorda, oneHigherSecondCopeland, oneHigherSTV)
+    makeTable('Same Weight and Single Preference', sameBorda, sameSecondCopeland, sameSTV)
 
 
 
@@ -54,13 +54,12 @@ def main():
 def getUserPref():
     userPref = []
     for x in range(0,len(AGENTS)):
-        weight = input("Weight for " + AGENTS[x] + ': ')
+        weight = int(input("Weight for " + AGENTS[x] + ': '))
         prefArray = []
         for y in range(0, len(CANDIDATES)):
-            pref = input("Agent " + AGENTS[x] + ' ranking for ' + CANDIDATES[y] + ': ')
+            pref = int(input("Agent " + AGENTS[x] + ' ranking for ' + CANDIDATES[y] + ': '))
             prefArray.append(pref)
         userPref.append({'agent': AGENTS[x], 'weight': weight, 'prefArray': prefArray})
-        print(userPref[len(userPref)-1])
     return userPref
 
 def getRandPref():
@@ -73,8 +72,14 @@ def getRandPref():
     return randomPref
 
 def getOneHigherPref():
-    betterCandidate = int(input('Which candidate index should always be better? (1-' + str(len(CANDIDATES)) + ') ')) - 1
-    worseCandidate = int(input('Which candidate index should always be worse? (1-' + str(len(CANDIDATES)) + ') ')) - 1
+    betterCandidate = int(input('Which candidate index should always be better? (1-' + str(len(CANDIDATES)) + '): ')) - 1
+    while(betterCandidate < 0 or betterCandidate > len(CANDIDATES)):
+        betterCandidate = int(input('Please choose a number between 1-' + str(len(CANDIDATES)) + ': ')) - 1
+    worseCandidate = int(input('Which candidate index should always be worse? (1-' + str(len(CANDIDATES)) + '): ')) - 1
+    while (worseCandidate < 0 or worseCandidate > len(CANDIDATES)):
+        worseCandidate = int(input('Please choose a number between 1-' + str(len(CANDIDATES)) + ': ')) - 1
+    while(worseCandidate == betterCandidate):
+        worseCandidate = int(input('Please choose a number other than ' + str(betterCandidate) + ': ')) - 1
     oneHigherPref = []
     for x in range(0, len(AGENTS)):
         oneHigherNums = [i for i in range(1, len(CANDIDATES) + 1)]
@@ -161,10 +166,17 @@ def bordaOrder(preferences):
     sortedCandidates = sorted(candidateScores, key=candidateScores.get, reverse=True)
     return sortedCandidates
 
-def secondCopelandOrder(preferences):
-    candidateScores = {}
-    sortedCandidates = sorted(candidateScores, key=candidateScores.get, reverse=True)
-    return CANDIDATES#sortedCandidates
+def secondCopelandOrder(degreeList):
+    secondOrderRanking = {}
+    for x in range(len(degreeList)):
+        listBeaten = degreeList[x]['listBeaten']
+        score = 0
+        for candidate in listBeaten:
+            beatenCandidate = next((thing for thing in degreeList if thing['type'] == candidate))
+            score += beatenCandidate['degree']
+        secondOrderRanking.update({degreeList[x]['type']: score})
+    sortedCandidates = sorted(secondOrderRanking, key=secondOrderRanking.get, reverse=True)
+    return sortedCandidates
 
 def stvOrder(preferences):
     tempCandidates = copy.deepcopy(CANDIDATES)
@@ -216,8 +228,9 @@ def makeTable(votingMethod, borda, secondCopeland, stv):
     numList = []
     for x in range(0, len(CANDIDATES)):
         numList.append(x+1)
-    print('\n|| ', votingMethod, ' ||  ', 'Borda','  ||  ', '2nd Copeland', '  ||  ', 'STV', '   ||')
-    print('-'*78)
+    firstLine = "\n||  "+ votingMethod + "  ||   " + "Borda" + "   ||   " + "2nd Copeland" + "   ||   " + "STV" + "    ||"
+    print(firstLine)
+    print('-'*(len(firstLine)-1))
     for x in range(0, len(CANDIDATES)):
         print('||',numList[x],' '*(len(votingMethod)),'||',
               borda[x],' '*(8-len(borda[x])),'||',
