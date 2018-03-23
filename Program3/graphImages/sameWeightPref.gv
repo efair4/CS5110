@@ -4,14 +4,14 @@ digraph {
 	Medium
 	Low
 	Lowest
-	Highest -> High [label="12, 3" weight=12]
-	Medium -> Highest [label="9, 6" weight=9]
-	Highest -> Low [label="12, 3" weight=12]
-	Lowest -> Highest [label="15, 0" weight=15]
-	Medium -> High [label="9, 6" weight=9]
-	High -> Low [label="12, 3" weight=12]
-	Lowest -> High [label="15, 0" weight=15]
-	Medium -> Low [label="12, 3" weight=12]
-	Lowest -> Medium [label="15, 0" weight=15]
-	Lowest -> Low [label="15, 0" weight=15]
+	Highest -> High [label="3, 2" weight=3]
+	Medium -> Highest [label="4, 1" weight=4]
+	Low -> Highest [label="4, 1" weight=4]
+	Highest -> Lowest [label="5, 0" weight=5]
+	Medium -> High [label="3, 2" weight=3]
+	Low -> High [label="3, 2" weight=3]
+	High -> Lowest [label="3, 2" weight=3]
+	Low -> Medium [label="3, 2" weight=3]
+	Medium -> Lowest [label="4, 1" weight=4]
+	Low -> Lowest [label="4, 1" weight=4]
 }

@@ -49,8 +49,6 @@ def main():
 
 
 
-
-
 def getUserPref():
     userPref = []
     for x in range(0,len(AGENTS)):
@@ -194,7 +192,6 @@ def stvOrder(preferences):
             plurality = calcPlurality(prefCopy, plurality)
         except:
             lowestPlural += 1
-
     return sortedCandidates
 
 def recalcPreferences(prefs, candidates):
